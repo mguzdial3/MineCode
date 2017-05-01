@@ -1,0 +1,233 @@
+\documentclass{article}
+\usepackage[lmargin=5cm,textwidth=15cm,marginparwidth=4cm]{geometry}
+\usepackage[dvipsnames]{xcolor}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{color}
+
+\usepackage{ragged2e}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{tikzpagenodes}
+\usetikzlibrary{calc}
+\usepackage{marginnote}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\newcounter{mydefinition}
+
+\newcommand\tikzmark[1]{%
+  \tikz[remember picture,overlay]\node[inner xsep=0pt,outer sep=0pt] (#1) {};}
+\newcommand\definition[1]{%
+\stepcounter{mydefinition}%
+\tikzmark{\themydefinition}%
+\begin{tikzpicture}[remember picture,overlay]
+\node[draw=Cyan,anchor=east,xshift=-\marginparsep]   
+  (mybox\themydefinition)
+  at ([yshift=3pt]current page text area.west|-\themydefinition) 
+  {\parbox{\marginparwidth}{\vskip10pt\RaggedRight\small#1}};
+\node[fill=white,font=\color{Cyan}\sffamily,anchor=west,xshift=7pt]
+  at (mybox\themydefinition.north west) {\ Definition!\ };
+\fill[BrickRed]
+  ([yshift=3pt]mybox\themydefinition.east) --
+  ([xshift=3pt]mybox\themydefinition.east) --
+  ([yshift=-3pt]mybox\themydefinition.east) -- cycle;
+\end{tikzpicture}%
+}
+
+\definecolor{lightGray}{gray}{0.6}
+
+\lstdefinestyle{sharpc}{language=[Sharp]C, keywordstyle=\color{blue}\bfseries,showstringspaces=false,
+frame=lr, rulecolor=\color{cyan}, stringstyle=\color{orange}, basicstyle=\ttfamily\color{black}}
+
+\begin{document}
+
+\topskip0pt
+\vspace*{\fill}
+\begin{center}
+{\Huge\bf MineCode}
+
+\vspace{2\baselineskip}
+
+{\Large Mark Riedl and Matthew Guzdial}
+
+\vspace{1\baselineskip}
+
+{\large Georgia Institute of Technology}
+
+\vspace{1\baselineskip}
+
+{\large \today}
+
+\end{center}
+\vspace*{\fill}
+\newpage
+
+
+\section{Introduction}
+
+%The desire to create computer games is often cited by individuals as a motivation to learn to program computers.
+%It has never been easier to design and make computer games. Tools such as {\em Unity3D} make it possible to produce high-quality computer games in one's home.
+%However even with most tools available for free right now, making a computer game is still largely an achievement that is only available to those who know how to code.
+%There are a wealth of tutorials on game design and development available online that start with the assumption that one already knows how to code. 
+
+%The material in this booklet is designed to take one from never having programmed before to the point where one has the basic knowledge necessary to take the next step in self-guided learning from online tutorials.
+{\em MineCode} is a set of seven lessons designed to teach basic programming concepts through the process of building and fixing existing computer games.
+It covers---in abbreviated form---the essentials of computer programming that one might learn in a semester-long university course. 
+It is not a substitute for a university programming course, but will give hands on experience with programming concepts that will bootstrap further self-learning. 
+%
+Our philosophy is to allow the learner to jump in and immediately start fixing and making games. 
+Computer games are necessarily complicated.
+Whereas many programing courses require a degree of slogging through abstract concepts before putting them to good use in projects that are not trivial and divorced from real things, our goal is to get readers hands dirty with computer game code as quickly as possible.
+
+Initially, this will involve {\em fixing} computer games.
+By fixing games, we do not mean taking code that doesn't work at all and making it work. 
+Instead, we provide fully functional, simple games that just aren't that much fun to play and ask the learner to make them more interesting.
+We will provide simple computer games that are not quite right and introduce concepts necessary to make these games better.
+For example, one of the first concepts a beginning programmer needs to know about are {\em variables}, chunks of computer memory that can store values for use later on.
+These values are used by computer programs in various ways.
+We present these concepts so that the learner can immediately see the effect of variables on game play.
+We also strive to provide opportunities for learners to express their creativity.
+Instead of having one right answer, we will encourage learners to explore programming concepts to make the games uniquely their own.
+
+Later, we will remove the crutches and more and more of the game will be built by the learner.
+Indeed, as early as Lesson 3, the learner will embark on a series of exercises that build off each other toward a single, complete game that leaves much up to the learner.
+
+In addition to exposing learners to the basic programming principles and concepts, the end of the final lesson results in a set of code, mostly written by the learner, that can form the basis for future new games.
+This code can be easily modified to make first person shooters, role-playing games, or other types of games.
+We hope that learners will feel they have something they can continue to build on, experiment with, and express creativity through.
+Our goal is to not leave the learner with the friction of having to start over after one set of lessons is complete.
+
+Why did we call our lessons {\em MineCode}? 
+The name is an attempt to capture the fact that we are borrowing the look and feel of {\em MineCraft} while also allowing capturing the fact that game that you make by the end of the lessons will be {\em yours}---something you made and potentially unique from the games that other people make while learning to code with these lessons.
+
+\section{The Game Engine}
+
+A {\em game engine} is a codebase that supports the creation of new games.
+{\em Unity3D} is a popular game engine that strives to allow independent creators make high-quality computer games. 
+It hides the gory details of 3D graphical rendering, physics, etc. under the hood and allows coders to focus on what the game is about.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=5in]{LessonThreeScript1}
+\caption{{\em MineCode} borrows the look and feel of {\em Minecraft}.}
+\end{figure}
+
+{\em MineCode} provides an additional layer of game engine code on top of Unity3D that emulates the aesthetic and much of the functionality of {\em Minecraft}.
+Why {\em Minecraft}?
+It is arguably one of the most recognized games in the world.
+Furthermore, {\em Minecraft} is recognized as a game that makes it easy to build and create within the game world.
+But {\em Minecraft} doesn't make it easy to make new games that aren't {\em Minecraft}.
+To turn {\em Minecraft} into a new game, one must get the source code and modify it.
+The art of modifying existing games is called {\em modding}.
+That is possible; the source code is available, but then one must figure out how it works and how to change it without breaking it.
+By building our own game engine that looks and feels like {\em Minecraft} on top of {\em Unity3D}, we provide source code to the learner that is easier to modify.
+Further, since the source code is built on top of {\em Unity3D}, the learner can easily change the look and feel of the game engine so that it no longer resembles {\em Minecraft}. 
+Therefore, while we are using {\em Minecraft} to provide a familiar environment for learning to code, we are not locking the learner into that environment.
+ 
+%\begin{figure}
+%\centering
+%\includegraphics[width=5in]{SnowmanAttack}
+%\caption{{\em MineCode} can be used to write games that are not much like {\em Minecraft}.}
+%\end{figure}
+ 
+\section{Roadmap}
+
+Each lesson is designed to take 1-2 hours, plus give some suggestions on how to go farther and make something unique.
+The lessons cover the following programming topics.
+
+\begin{enumerate}
+\item {\bf Variables and mathematic operators.} 
+The variable is the most basic building block in computer programming. 
+We will explore how small changes in variables can have big impacts on an existing game called {\em Snowman Attack}. 
+The game works out of the box, but is ``unwinnable''.
+Learners will tweak the variables in the game to make it winnable and change the feel of the game to be more fun.
+	\begin{itemize}
+	\item Introduction to modifying scripts in {\em Unity3D}.
+	\item Introduction to variables.
+	\item Using mathematical operations.
+	\item Making and using new variables.
+	\end{itemize}
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{SnowmanAttack}
+\caption{Snowman Attack.}
+\end{figure}
+	
+\item {\bf Conditionals.}
+The logic of any computer program is controlled by the ability to check the value of a variable and make a decision---to execute one chunk of code or another in response to some circumstance or player action.
+In this lesson, the learner has to implement code to make it possible for a player to escape a cave.
+%The cave has a door, but the door will not open unless the player is holding a key and a sword.
+The cave has a door, but it does nothing. The learner must make it so that a player can open the door, and then make it interesting to do so.
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{LessonTwoScript10}
+\caption{A sword and a key.}
+\end{figure}
+
+\item {\bf Functions.}
+Functions are blocks of code that can be used over and over again. 
+This lesson introduces learners to writing and using functions.
+It also gets into some particulars of the {\em Unity3D} game engine and how scripts work in the engine that we were able to previously gloss over.
+Once the learner understands how to use functions, a wealth of {\em Unity3D} functionality opens up to use.
+By the end of the lesson, the learner will have built a game in which players must fight an army of ghosts.
+There are numerous opportunities to customize the ghosts.
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{LessonThreeScript3}
+\caption{Fighting ghosts.}
+\end{figure}
+
+\newpage
+\item {\bf Loops.}
+One of the things computers are really good at is doing the same thing over and over, maybe with small variations each time.
+This is true for games too.
+Loops are chunks of code that repeat over and over again.
+This lesson explores {\em procedural content generation}, the writing of code that automatically creates part of the game.
+In this lesson, the learner will write code that creates the landscape in the game world.
+If this were normal {\em Minecraft}, the player would build block by block. 
+Instead, the learner will write the code that builds hills and trees.
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{LessonFourScript13}
+\caption{A procedurally generated tree.}
+\end{figure}
+
+\item {\bf Object orientation.}
+If functions allow a programmer to use chunks of code over and over again, the {\em objects} allow programmers to use groups of functions over and over again.
+In this lesson, learners will learn about objects and inheritance, where new types of objects borrow functionality from old types of objects. 
+Learners will make new types of non-player characters (NPCs) for their game and write the code that sends the player on quests.
+The player is going to need a magic sword; the learner will see how to take an existing sword object and make a new type of sword object with special, custom properties.
+\begin{figure}[!h]
+\centering
+\includegraphics[width=3.5in]{LessonFiveScript11}%{NPCSCustom}
+\caption{A magic sword.}
+\end{figure}
+
+\newpage
+\item {\bf Practice!}
+Lesson 6 challenges the learner to pull a lot of the programming concepts together to make their game even better.
+Learners will program a Boss monster for the player to fight.
+The lesson also gets into the tools available as part of {\em Unity3D} to make game art.
+\begin{figure}[!h]
+\centering
+\includegraphics[width=3.5in]{StoneFigures}
+\caption{Boss monsters.}
+\end{figure}
+
+\item {\bf Make your own game.}
+The final lesson provides some pointers on how to take the next steps and make a game that is unique.
+With the pointers in this lesson, one can make a tower defense game, a shoot-em-up game, a murder mystery game, or an adventure game.
+\begin{figure}[!h]
+\centering
+\includegraphics[width=3.5in]{LessonSeven2}
+\caption{A non-player character in a murder mystery game.}
+\end{figure}
+
+\end{enumerate}
+
+\section{Final Note}
+
+The following series of lessons introduce basic programming skills in a manner meant to engage and educate. We hope to dispel the potentially daunting appearance of programming via an interactive environment in which students can immediately see the impact of their work. While these lessons are in no way meant to replace an introductory course in computer science, they should benefit any student interested in computer science both in terms of hands-on programming knowledge and the confidence to approach new programming problems. We encourage any student to approach these lessons ready to learn and willing to flex their creativity, as we feel that is the way to get the most from them.
+
+\end{document}

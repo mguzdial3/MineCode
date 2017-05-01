@@ -1,0 +1,633 @@
+\documentclass{article}
+\usepackage[lmargin=5cm,textwidth=15cm,marginparwidth=4cm]{geometry}
+\usepackage[dvipsnames]{xcolor}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{color}
+
+\usepackage{ragged2e}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{tikzpagenodes}
+\usetikzlibrary{calc}
+\usepackage{marginnote}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\newcounter{mydefinition}
+
+\newcommand\tikzmark[1]{%
+  \tikz[remember picture,overlay]\node[inner xsep=0pt,outer sep=0pt] (#1) {};}
+\newcommand\definition[1]{%
+\stepcounter{mydefinition}%
+\tikzmark{\themydefinition}%
+\begin{tikzpicture}[remember picture,overlay]
+\node[draw=Cyan,anchor=east,xshift=-\marginparsep]   
+  (mybox\themydefinition)
+  at ([yshift=3pt]current page text area.west|-\themydefinition) 
+  {\parbox{\marginparwidth}{\vskip10pt\RaggedRight\small#1}};
+\node[fill=white,font=\color{Cyan}\sffamily,anchor=west,xshift=7pt]
+  at (mybox\themydefinition.north west) {\ Definition!\ };
+\fill[BrickRed]
+  ([yshift=3pt]mybox\themydefinition.east) --
+  ([xshift=3pt]mybox\themydefinition.east) --
+  ([yshift=-3pt]mybox\themydefinition.east) -- cycle;
+\end{tikzpicture}%
+}
+
+\definecolor{lightGray}{gray}{0.6}
+
+\lstdefinestyle{sharpc}{language=[Sharp]C, keywordstyle=\color{blue}\bfseries,showstringspaces=false,
+frame=lr, rulecolor=\color{cyan}, stringstyle=\color{orange}, basicstyle=\ttfamily\color{black}}
+
+\begin{document}
+
+\topskip0pt
+\vspace*{\fill}
+\begin{center}
+{\Huge\bf Lesson Three}
+
+\vspace{2\baselineskip}
+
+{\huge I Ain't Afraid of No Ghosts}
+\end{center}
+\vspace*{\fill}
+\newpage
+
+
+
+\section{Introduction to Lesson Three}
+
+In the past two lessons, you've learned about the building blocks of code (variables) and how to have your code make different decisions based on the situation (conditional statements). In this lesson we'll bring both of these pieces together and expand upon them in order to fix a \textit{very} broken ``beat `em up" game. This lesson builds on lessons one and two, so we don't recommend attempting it until you've finished both of those. 
+
+\section{Lesson Three: I Ain't Afraid of No Ghosts}
+
+If you closed Unity after Lesson Two, open it back up. Once Unity is opened, select the project from the drop down menu that pops up and wait for it to fully load. From there, go to the ``Project" view, open the Lessons folder, and double click the ``LessonThree" scene file. 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Click the ``play" button at the top of Unity to check out the currently broken ``beat `em up" game. Remember you can hit the Escape or Backspace key to get your mouse back and stop the game at any point (this will be necessary to do as the game doesn't end). Note: Windows users may not have the mouse disappear upon play without bringing up the pause menu with Escape then clicking ``Resume".
+    }%
+}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript1}
+  \caption{A section of the island that comprises Lesson 3.}
+  \label{fig:LessonThreeScript1}
+\end{figure}
+
+When you boot up the game you should find yourself on a small island. Around the island you will find a number of randomly scattered green ghosts. Sadly, these ghosts don't seem to want to do anything. 
+
+However, the first thing you probably noticed was that the player moves much slower than in the last lesson. Additionally, falling seems to go much more slowly. Before we can fully explore the island, we need to deal with these issues. Let's open up the first script (of many) we'll be working with in this lesson. It's name is ``PlayerInfo.cs". You'll find it in the Codebase folder, and then within the ``PlayerScripts" folder. Double click on the ``PlayerInfo.cs" file to open it up in MonoDevelop. As a reminder, MonoDevelop may take some time to open if it was closed after LessonTwo. 
+
+\subsection{Script Usage and PlayerInfo}
+
+In both lesson one and two we only edited a single script. However, even the simple games of lessons one and two relied on a large number of scripts. Typically, each script contains a single class. Classes can, in turn, serve a variety of purposes in a game. For example,  a class may be used to store information (like in lesson one where LessonOneGame held values for player speed) or a class may be used to store behavior information (like in lesson two where we added the behavior for the locked door to LessonTwoGame). PlayerInfo falls into the first of these two categories, storing variables that relate to the player.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript2}
+  \caption{PlayerInfo.cs before any changes have been made.}
+  \label{fig:LessonThreeScript2}
+\end{figure}
+
+Figure \ref{fig:LessonThreeScript2} displays how PlayerInfo appears to begin with. By now you should be pretty familiar with the structure of classes. There's still the ``using UnityEngine" line at the top of the script, followed by the class information ``public class PlayerInfo : MonoBehavior". From there we have three variable definitions. \definition{\textbf{ACCESS MODIFIER}:\newline A keyword that limits what other code can ``see" a variable, function, or class.} However, these are a bit different than what we've seen before as all three have what's referred to as \textbf{access modifiers}. An access modifier is a keyword that determines whether some variable, function, or class can be seen by \textit{other} scripts. The two most common access modifiers are ``public" and ``private". The access modifier public indicates that a variable, function, or class can be accessed by all other scripts in a project. We've seen it used in all classes thus far (including PlayerInfo) so that they can be used by other classes in the project. While we didn't see the word, it was also used in every single function and variable from other classes we've used so far (so like LockedDoor.OpenDoor() from LessonTwo and Time.deltaTime from LessonOne. 
+
+This might seem a bit complicated, so let's show an example. Go ahead change the values in the speed and gravity variables so you can move around a bit easier. We recommend ``5" for speed and ``20" for gravityValue, but feel free to play with other values for these variables and jumpValue. 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Make your changes and play the game again, note the improved speed and falling! Feel free to continue to make changes to all three values, testing out their effects on the game world and player motion as you do.
+    }%
+}
+
+But how did the variables in PlayerInfo.cs actually have this effect? The variables just exist in PlayerInfo.cs. Well in this case, because they're public \textit{another} class (CharacterMotor.cs in this case) reads in the variable values to determine how quickly to move the player. That's the power of the public access modifier!
+
+There's actually an opposite to the public access modifer called ``private". We haven't seen it used yet, but it's actually the default access modifier for variables, functions, and classes. So unless otherwise specified, variables, functions, and classes can only be accessed inside the script where they are defined. This is the default as it helps programmers to control how information can be accessed, to be sure it isn't changed when it shouldn't be.
+
+
+\subsection{Fixing Enemy A.I.}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript3}
+  \caption{An example of an unmoving ghost.}
+  \label{fig:LessonThreeScript3}
+\end{figure}
+
+Enemy Artificial Intelligence (AI) is a staple of ``action" games, where various different enemies create challenge for a player based on their attributes and behaviors. However, our ``beat `em up" presently has no apparent enemy behaviors! All they do is stand around, as portrayed in Figure \ref{fig:LessonThreeScript3}. You can go up to them and hit them with the sword (by left clicking). Why don't we try that?
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	If you haven't already, play the game so you can run up to an enemy and hit it with your sword. 
+    }%
+}
+
+That's not all that exciting, is it?
+
+At the heart of AI is the idea that an entity will act differently depending on the situation. For example, if the player is close, then a ghost should attack. But if the ghost doesn't see the player, the ghost should search for the player. That structure kind of looks like the conditionals from Lesson Two, don't you think? In the AI we'll implement for these enemies we'll translate statements like that into code.
+
+If you'll recall, we previously stated that classes served two main purposes, either holding information (like PlayerInfo) or behaviors. The next script we'll be working with is largely of the latter type, holding the behavior of the enemies. The script in question is Enemy.cs. It can be found in the Codebase folder, and then within the ``NPC" folder. Double click on it to open it up in MonoDevelop. 
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript4}
+  \caption{Enemy.cs when it's first loaded into MonoDevelop.}
+  \label{fig:LessonThreeScript4}
+\end{figure}
+
+When you load up Enemy.cs you should see something like Figure \ref{fig:LessonThreeScript4}. The class Enemy looks very much like other classes we've seen before. It has "Update" and "Start" functions like we've seen before, we'll be using those to store the code to handle the enemies behavior. However, it also has a couple new features. 
+
+The first of the two new features can be seen in Enemy's other functions ``GetSpeed" and "GetFiringRate". As you can see these functions are public, unlike Update and Start, meaning that they can be called by other code outside of this class. However, the new feature is the teal \textbf{return} keyword that both functions use. \definition{\textbf{RETURN}:\newline A keyword which ``returns" a value from a function to the line of code which called the function.}
+
+Though we haven't brought it up before, all functions have what's referred to as a \textbf{return type}. This return type specifies the type of value that a function will return, and it's determined by the word directly before a function name in a function definition. So for ``Start" and ``Update" this word is ``void", which means that the function doesn't return anything (void is equivalent to ``nothing"). However, both ``GetSpeed" and ``GetFiringRate" have ``float" as their return type, meaning that they return float values when they are called. You may still be a bit confused about return types, but we'll give several examples further in the lesson.
+\definition{\textbf{RETURN TYPE}:\newline Part of a function definition, determines the type of value that function will return, or that it won't return anything if ``void". }
+
+\subsection{Class Variables and Moving Enemies with movementController}
+
+The second new feature of Enemy is its use of two different new variables ``movementController" and ``attackController", both of which have types that are classes: NPCMovementController for movementController and RangeAttackController for attackController. It may seem odd to have a variable with the ``type" of a class, rather than a primitive type (like float, boolean, or string) but it's actually very typical! We previously referred to classes as ``complex variable types", but didn't explain why. If you think back to our other lessons, you might remember that classes had variables inside them (LessonTwoGame has seesPlayer, for example). The reason classes are referred to as ``complex" variable types is that they can store \textit{other variables inside them}. We therefore can have variables like movementController, that store \textit{other} variables.
+
+We'll demonstrate why this is important with an example. NPCMovementController handles (as you might guess from the name), an enemy's movement. It handles movement via setting a goal for the enemy and then calculating a path to get to the goal.\footnote{You can check out a full list of publicly accessible functions in NPCMovement at the end of this lesson, though we'll go over most individually as they come up.} We'll use the function ``SetTargetPositionGoal" as it takes in a GameObject and calculates a path to that GameObject's present position.
+
+Go ahead and add the below line to Start:
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+movementController.SetTargetPositionGoal (player);
+\end{lstlisting} 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game and wait a few moments without moving to find yourself surrounded by enemies.
+    }%
+}
+
+Well that's something! But how is it working? We can actually do a small test to demonstrate. 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game again, but this time as soon as the game begins, move at least a few blocks away from the starting position.
+    }%
+}
+
+The enemies didn't surround you that time, can you think why? The enemies instead surrounded the spot where you were to begin with. This is because the function call ``SetTargetPositionGoal" was only ever called in Start, meaning that the function calculated a path for each enemy to the player's position \textit{when Start was called}.
+
+\subsection{Class Variables and Functions}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{EnemyDiagram}
+  \caption{A diagram of two different Enemy objects during gameplay.}
+  \label{fig:EnemyDiagram}
+\end{figure}
+
+You may have wondered why we're called a function (SetTargetPositionGoal) by using a ``class variable" (movementController.SetTargetPositionGoal) instead of just a class (NPCMovementController.SetTargetPositionGoal) as we have previously. This has a lot to do with the way that class variables work. We need to have different values stored in the different variables of movementController. In the example that you just played through you probably saw the enemies taking very different paths to reach you and stopping at different times. That makes sense that they'd have to take different paths, given that they all start in different positions, right? They were able to store the value of this path, and follow it, as they could store \textit{different} values!
+
+Classes can have variables as we've seen before. A variable of a class type can actually store \textit{different} values in the variables that it uses. That's how the enemies can have different paths. Take a look at Figure \ref{fig:EnemyDiagram} which shows two different Enemy variables (the enemies you see in the game) during gameplay. Each enemy variable as variables of it's own, id, speed, and the GameObject ``player" variable, which stores ``Player" the actual object a player controls. These enemies are both ``built" from the Enemy class that we've been modifying! It serves as their ``blueprint" to use the same metaphor as we did with LessonTwo.
+
+As you can see in Figure \ref{fig:EnemyDiagram} not only do the two different enemies (enemy1 and enemy2 are their variable names) have different id values, but their movementController variables store different information as well. One is moving while the other is not!
+
+This is the power of variables of a class-type (or ``class variables). They will behave in the same way (have the same variables and functions), but can store very different values. That's why we call SetTargetPositionGoal with movementController and not with NPCMovementController. If we had to call that function with the class, instead of a class variable, then we could only store one of ``path" value, and all the enemies would have to follow the same path.
+
+Think of it of in terms of the ``blueprint" metaphor we used in the previous lesson. A single ``house" blueprint could be used to build multiple houses, as a single class can make multiple class variables. However, if we wanted to open a door on one of those houses, we wouldn't try to open the blueprint's door. Similarly, when we wanted to tell an enemy to compute a path to a goal, we don't tell NPCMovementController to do it, but an individual movementController variable. movementController is the house, NPCMovementController is the blueprint.
+
+If you're still finding class variables to be confusing, continuing to fix the game should help in understanding what's going on.
+
+\subsection{OPTIONAL: Using Unity to Show the difference between objects}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{Enemy12}
+  \caption{Unity's display of the public Enemy variables for ``0000" and ``0001".}
+  \label{fig:Enemy12}
+\end{figure}
+
+You can actually see these different values in Unity as well. If you play the game again, and then use ``Escape" to get the mouse and then press the ``pause" instead of the ``play" button, you can see ``0000" to ``0009" in the ``hierarchy" view. These are the enemy variables in Unity! If you click on them the ``Inspector" view will show something that looks like \ref{fig:Enemy12}. You can un-click the play button to get out of this mode. We'll use this way of interacting with Unity later, but for now it's just useful as a way to see the differences between the different enemies. 
+
+\subsection{Making Enemies Move Intelligently}
+
+So far we've managed to make the enemies move all to the exact same point just once, after which they will again stay in place forever. That's not particularly useful. In the last section we were able to write what were essentially ``rules" for how a door should act. Let's see if we can do the same here!
+
+To begin with, let's see if we can just get the enemies to continually follow the player. To do that we'll need two things: the ``ReachedGoal" function of movementController and an if statement. The ``ReachedGoal" function returns a boolean value representing whether the enemy has reached its goal (true) or not (false). That means it has a ``return type" of boolean. We can use this fact to determine when we need to use ``SetPlayerPositionGoal" again. We'll want to put this new check and call in Update, so it occurs more times than just once at the start of the game. Place the following lines of code into Update: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+bool reachedGoal = movementController.ReachedGoal();
+if(reachedGoal){
+	movementController.SetTargetPositionGoal (player);
+}
+\end{lstlisting} 
+
+We can't just call ``movementController.SetTargetPositionGoal (player);" in Update as then the enemy would just continually recalculate a path, but never actually move along it. It also takes a lot of time to calculate a path and this would slow down the game.
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game again with the code added and saved in Enemy's Update. It may take some time (as they'll have to get to the starting position of the player before they'll plan out a new path), but eventually you'll have a small crowd of enemies following behind you.
+    }%
+}
+
+You've done it! You've successfully managed to make the enemies follow you. Note that this Update code is being called in \textit{each} Enemy individually as each of these enemies represents a different Enemy class variable. That's a lot to wrap your head around! But let's show you that it's working in game.
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game again. This time pay attention to the enemies at the ``back" of the line following you as you move around. Try to see the moment they stop going to a different location and turn to where you are. That's the moment that ``movementController.ReachedGoal()" is set to true as the enemy reached their last goal, and thus ``movementController.SetPlayerPositionGoal (player);" is called and they head to your current location.
+    }%
+}
+
+This shows you that this Update code is being called in each different enemy individually, as the moment they turn to face you, when ``movementController.ReachedGoal()" returns true is different for each one! That's the trouble with writing good enemy behavior in code, it has to be able to work for different enemies in different situations! 
+
+However, this isn't particularly good enemy behavior. First of all, having the enemies immediately hone in on you seems pretty unfair. We probably want it so an enemy only chases the player if they can see the player. Can you think of a way to represent in code whether or not an enemy can see a player? Some kind of variable that could store whether or not something was true?
+
+The answer is to add a new boolean variable to track whether or not the enemy can see the player. It'll need to have global scope (defined outside of a function in Enemy), can you think why? Let's name the variable ``seesPlayer" with an initial value of false. Define it above the GetSpeed function. 
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript6}
+  \caption{The class Enemy with the seesPlayer variable and additional if statement.}
+  \label{fig:LessonThreeScript6}
+\end{figure}
+
+Alright now we have a new variable, but that's not really particularly useful on its own. In trying to determine what to do next let's start with the effect we want to achieve and what we have so far, that's a typical approach for programmers in trying to determine what code to write. We know that we want the enemy to ``chase" the player (as it has already) if it can see the player. Therefore it might make sense to go ahead and put the code in Update that we have so far (that we know makes the enemy chase the player) into an if statement with the ``seesPlayer" variable as the condition. When you're done the script should look like Figure \ref{fig:LessonThreeScript6}.
+
+But we still don't quite have the behavior we want. For one, ``seesPlayer" never gets set to true. Secondly, we haven't yet decided what an enemy should do \textit{before} its seen a player (the code in Start still sends the enemy to the player's position). We could have it do nothing, so an enemy would just sit still until it saw the player. But then a ghost may never move! That's probably not the best idea. How about instead we have the enemies move randomly across the island ``searching" for the player?
+
+Let's go ahead and add in the functionality to have the enemies move around the island randomly at first, even if they won't ``switch" to seeing the player at this point. The function we'll want to use for this is ``SetRandomGoal" of movementController. It works much in the same way as ``SetTargetPositionGoal" except that it doesn't have any arguments. Replace the line in Start with:
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+movementController.SetRandomGoal();
+\end{lstlisting} 
+
+This will cause each enemy to create an initial path to a random point (each point will be unique to each enemy), instead of to the player.
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game, and note that changed enemy behavior.
+    }%
+}
+
+As you saw, enemies now move to a random position and then come to a stop. This is similar to how the enemies initially acted when we only had the ``SetPlayerPositionGoal" line in Start. This should make sense if you think about it, as the only other code in Enemy.cs is in Update, and none of it will run as ``seesPlayer" is not ever set to true (at the moment). However, what we'd like to have happen is for the enemy to keep moving to random positions until it sees the player. Can you think of how to keep the enemies moving to random positions if seesPlayer isn't true? Maybe if we say that we'll need to use an ``else statement" in Update? And that you can use the code to have enemies chase the player as an example?
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript7}
+  \caption{Update of Enemy.cs after adding everything needed to keep the enemies constantly moving to random positions.}
+  \label{fig:LessonThreeScript7}
+\end{figure}
+
+We'll need an else statement to handle when the enemy can't see the player. We'll then need to nearly replicate the code within the if statement to cause the enemy to find a new random path after it reaches its current goal. The difference is we'll need to call ``SetRandomGoal" instead of ``SetPlayerPositionGoal". When you're done, your Update function should look like Figure \ref{fig:LessonThreeScript7}.
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game and note that changed enemy behavior.
+    }%
+}
+
+Now you've got enemies moving everywhere! The last thing we're missing is figuring out when the enemy sees the player. To do that we'll make use of the ``CanSeeTarget" function of movementController. CanSeeTarget will return a boolean value if the movementController in question can ``see" the passed in GameObject. This is exactly what we need for updating the ``seesPlayer" variable! We can use the below line in Update: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+seesPlayer = movementController.CanSeeTarget(player);
+\end{lstlisting} 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Insert the ``movementController.CanSeeTarget" line above the if statement in Update and play the game. Try and see if you can get an enemy to first start following you then ``lose track" of you. As a warning, this will be very difficult.
+    }%
+}
+
+It's possible to get the behavior where an enemy starts ``chasing" you, but then ``loses track" of the player. But it's actually really tough to tell! Can you think why that might be? Let's walk through a possible example to try to illustrate what's happening here. 
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{FullEnemyPathingExample}
+  \caption{Example of how the current Enemy.cs script works. The green square is a ghost, the arrows are its path, and the blue circle is the player.}
+  \label{fig:FullEnemyPathingExample}
+\end{figure}
+
+Check out Figure \ref{fig:FullEnemyPathingExample} for an illustration of four different moments with just a single enemy to explain what's happening with the code at this stage. Before Start, the enemy has no path as it was just created (1). \newline
+After Start, the enemy has a path to a random point and begins to travel along it (2). \newline
+While traveling along the path, the ghost might see the player (seesPlayer will now be equal to true) (3). \newline
+But the ghost isn't done with its path (ReachedGoal would not return true) so it continues along it until the path is done (4). \newline
+However, the ghost cannot ``see" the player in (4), so seesPlayer will be false. Therefore when it reaches the end of its path, it will pick a random goal instead of choosing the player as the goal (it will run the else statement since seesPlayer is false, instead of running the if statement). 
+
+That's no good! What we need is something where as soon as the enemy sees the player, it begins to chase the player. Essentially, we need to be able to set the enemy's goal to the player when it sees the player after previously \textit{not seeing the player}. What we need to know is when seesPlayer switches from false to true. 
+
+There's a couple different ways to solve this. We could change where we call ``CanSeeTarget" to be within the else statement. If we did that then we'd know that seesPlayer was false (so we got into the else statement), and then if seesPlayer became true we'd know it had just switched from false to true. However, that mean that we'd have run the other code in the else statement when that wasn't necessary. We'd essentially have had the enemy acting like it hadn't seen the player that frame even though it had! 
+
+To avoid running unnecessary code we'll use the ``not" logical operator (!). As you might recall from the last section, logical operators work on conditions like how mathematical operators (+, -, etc) work on numbers. We'll start by storing the return value of ``CanSeeTarget" into a temporary variable, let's call it ``nowSees". Replace the ``movementController.CanSeeTarget" line at the top of Update with the following two lines (they are separated on purpose, as we'll explain):
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+bool nowSees = movementController.CanSeeTarget(player);
+
+seesPlayer = nowSees;
+\end{lstlisting} 
+
+What we want is when nowSees is true \textit{and} seesPlayer is false (before seesPlayer is set to nowSees). As that will mean that previously (as in the last time Update was called) the enemy couldn't see the player, but now it can. To say that a bit more formally we want a condition where nowSees is true and seesPlayer is not true. If we translate that into code we get the following condition:
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+nowSees && ! seesPlayer
+\end{lstlisting} 
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript8}
+  \caption{Update of Enemy.cs after adding everything needed to have enemies search for then track the player.}
+  \label{fig:LessonThreeScript8}
+\end{figure}
+
+This condition will be true when nowSees is true \textit{and} seesPlayer is \textit{not} true. If we put that condition into an if statement, then we can be sure the code in the if statement will run only when the enemy now can see the player, but could not see the player previously. Inside this if statement we could then put a call to ``movementController.SetPlayerPositionGoal (player);" to make the movementController immediately calculate a path to the player and begin to follow that path. When you're done your Update function should look something like Figure \ref{fig:LessonThreeScript8}. 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    	Play the game and get some enemies chasing you. It should be much easier this time!
+    }%
+}
+
+And with that you've done it! You've got the enemy moving intelligently. At this stage you could try to add additional behavior to make the enemy more intelligent. For example, you could add a special behavior in for when the enemy loses sight of the player (when seesPlayer is true and nowSees is false), perhaps having the enemy go ahead and move to the player's current location as that's close to where the enemy had last ``seen" the player? That's up to you!
+
+It might be surprising, but a lot of AAA games make use of rules-based enemy artificial intelligence very similar to this! Of course, at the moment the ghosts running around aren't really ``enemies" in that they make no attempt to attack the player. We'll change that though!
+
+\subsection{Cleaning up Code}
+
+Before making the enemies attack the player, let's take a moment to clean up the code we have so far. 
+
+If you'll recall, we don't actually need to use a boolean variable as a condition in an if statement. In the previous section we put a direct boolean value (true and false) inside an if statement. 
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript9}
+  \caption{Update of Enemy.cs after removing the unnecessary ``reachedGoal" variable.}
+  \label{fig:LessonThreeScript9}
+\end{figure}
+
+Using this information it should be pretty easy to see that we don't need to use either ``reachedGoal". We can simply use the fact that ``ReachedGoal" returns a boolean value to place the call to that \textit{inside} the if statement! Go ahead and remove both the ``reachedGoal" variables from Update and just used the ``ReachedGoal" function instead. When you're done Update should look like Figure \ref{fig:LessonThreeScript9}. We can do the same thing with two less lines of code, not bad!
+
+We'll continue to use returned values directly from functions (instead of storing them in unnecessary variables) in the next section. 
+
+\subsection{Making the Enemies Attack!}
+
+We used movementController in order to control Enemy movement. As you might guess, we'll be using attackController to handle attacking. Go ahead and insert the following line near the top of Update: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+attackController.Fire(player);
+\end{lstlisting}
+
+This will cause the enemy to shoot off a projectile at the passed in GameObject (player). Let's see what the effect of this is!
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    Go ahead and play the game. Notice the behavior of the enemy's and the projectiles they shoot almost constantly.
+    }%
+}
+
+This behavior isn't particularly intelligent, is it? Since the enemies just fire constantly it tends to leave stray shots firing in every direction. One simple change we could make is to have the enemies only shoot if they can currently see the player. Move the call to ``Fire" to inside the ``seesPlayer" if statement.
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    Move the ``Fire" line to only be called when the enemy can ``see" the player. Play the game, and see what effect this has!
+    }%
+}
+
+This behavior is definitely improved, but its still not perfect. The biggest problem seems to be that the projectiles ``explode" before hitting the player. That's because these projectiles are being shot when the player is out of range! 
+
+We can get the projectiles range by using attackController's ``GetProjectileRange", which will return the float value for the max distance the projectile can travel. We can then use movementController's ``GetDistanceToTarget", which takes in a reference to a GameObject, and calculates the distance between it and the enemy. These two functions together will help us change the enemy's behavior to only shoot when the player is in range.
+
+What we want is to only shoot (have Fire be called) if the distance between the player and enemy (GetDistanceToTarget) is less than the distance the projectile can fly (GetProjectileRange). That phrasing should make it sound like an if statement might be useful. However, we'll have to use something new called a \textbf{relational operator}.  \definition{\textbf{RELATIONAL\newline OPERATOR}:\newline A symbol or symbols that represents a boolean relationship between two values.} A relational operator is a symbol or symbols that represents a boolean relationship between two values. For examples there's ``$>$" which is the greater than symbol. In code if we had a line: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+bool test =  4 > 2;
+\end{lstlisting}
+
+Then test would store a value of true. Since it's ``true" that 4 is greater than 2. You may have run into this symbol and it's opposite less than ($<$) in a math class. They work in code in a very similar way, as you can guess! For example if we used less than instead of greater than: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+bool test =  4 < 2;
+\end{lstlisting}
+
+Then test would store a value of false.
+
+But how is this useful to you? Well remember the phrasing we used earlier: ``if the distance between the player and enemy (GetDistanceToTarget) is less than (GetProjectileRange)". Now that you know about relational operators, you should see that we can make use of them to check for this exact condition and to only ``Fire" when it is true. Replace the line that calls ``Fire" (inside the seesPlayer if statement) with the following lines (as a note, both GetDistanceToTarget and attackController should be on the same line in update, we just can't fit those on the same line here): 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+bool inRange = movementController.GetDistanceToTarget(player)
+	 < attackController.GetProjectileRange();
+if(inRange){
+	attackController.Fire(player);
+}
+\end{lstlisting} 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    Play the game, and notice the effect of these changes!
+    }%
+}
+
+Does what's happening make sense? Now Fire will only be called when the player is closer to the enemy than that enemy's max range. This doesn't mean the enemy will always hit, but it does mean that the enemy won't just shoot wildly. And that looks more intelligent! 
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript10}
+  \caption{Update with Fire now only firing when it makes sense to do so.}
+  \label{fig:LessonThreeScript10}
+\end{figure}
+
+Remember that you don't need to put an variable into an if statement, just a boolean value. That means we can actually don't need inRange, we can put ``movementController.\newline GetDistanceToTarget(player) $<$ attackController.GetProjectileRange()" directly into the if statement! Check out Figure \ref{fig:LessonThreeScript10} for how Update should end up looking.
+
+You've done it! Now you have an enemy that moves and shoots at least somewhat intelligently! At this point you could add more if statements to make it behave more intelligently on your own. Think about the condition that you want to create (for example: if the player is within range, the enemy should always move towards the player as if it heard it), then translate that into code (for example: if(movementController.GetDistanceToTarget(player) $<$ attackController.GetProjectileRange())), and determine where in Update it makes sense to put this if statement. Feel free to add as many behaviors as you like, see how smart of an enemy you can make! 
+
+\subsection{Creating End Conditions}
+
+You may have already gone and ``destroyed" all the enemies in the game and been left to nothing to do but stop playing. You may have also noticed that no matter how many of the projectiles hit you, you can never lose! If not its worth noting at this point that there is no way to win or lose the game! For both we'll make use of brand new scripts and we'll need to make use of the relation operators as well. 
+
+\subsection{Losing}
+We'll start with making it possible to lose. To do that we'll want to open up a new script ``Projectile.cs". As you can probably guess, this script handles the behavior for projectiles. It can be found in the Codebase folder, and then within the NPC folder. Double click ``Projectile" to open it up. 
+
+There's a lot going on in the ``Projectile" class! Feel free to take a deeper look at it, but the function we need is called ``HitPlayer" and it's right at the top of the class. In this function we can specify what should happen when a projectile hits the player. Right now all that happens is that the projectile is destroyed via the line ``Destroy (gameObject);". 
+
+For now, let's go ahead and make the player lose if they get hit by just one shot (we can make this less difficult later). We can end the game by calling the line:
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+GameManager.EndGame ("You Lose!");
+\end{lstlisting}
+
+EndGame will immediately stop play and display whatever string value is passed to it. Therefore, we can use it for both winning and losing! Go ahead and insert that line somewhere \textit{before} the line that destroys the projectile in HitPlayer. 
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+    Play the game! You'll almost immediately see that this is an unreasonable level of difficulty.
+    }%
+}
+
+Because the enemies move randomly, it can be only seconds before the first time the player is hit by a projectile. Just one shot isn't even enough time to act! 
+
+Many games use a ``hitpoints" system. Hitpoints typically represent a player or enemy's health, and the player or enemy doesn't die till they lose all of their hitpoints. Let's see if we can use something like that here! To do that, we'll actually need to introduce a new variable to track the player's hitpoints. Can you think of where might be a good place to store this value? 
+
+Open PlayerInfo.cs back up and add a new integer variable named ``hitpoints" (there's no need for decimal points here). We'll store this information here since that's where the rest of the player information is, and we have access to it inside HitPlayer (since PlayerInfo playerInfo gets passed into the function). Since we'll want to be able to both get and alter the value of this variable, it will need to be public. Set its initial value to something high at first, perhaps a hundred? In total the line should look like: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+public int hitpoints = 100;
+\end{lstlisting}
+
+Add that to PlayerInfo then return to Projectile.cs. 
+
+What we want now is to have the value of hitpoints get lower every time a Projectile hits the player. Remember how we can alter the value of a variable as we did in LessonOne, we'll want to use a line like: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+playerInfo.hitpoints = playerInfo.hitpoints -1;
+\end{lstlisting}
+
+This will change the value of hitpoints stored in playerInfo to be one less every time the player is hit by a projectile. We used a similar technique in LessonOne. It works because the right side of the equals sign is evaluated first, meaning that it gets the value of playerInfo.hitpoints and subtracts one from it. Then the equals sign stores that new value into the same variable. This has the effect of making playerInfo.hitpoints go down by one every time this line is called! 
+
+The last thing we'll want to do is add a call to EndGame with ``You Lose!" (feel free to change the text used) only if hitpoints is less than 0. Translating that statement into code we get: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+if (playerInfo.hitpoints < 0) {
+	GameManager.EndGame ("You Lose!");
+}
+\end{lstlisting}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript11}
+  \caption{HitPlayer when it is complete.}
+  \label{fig:LessonThreeScript11}
+\end{figure}
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+	Insert both the line changing hitpoints value and the new condition into HitPlayer and play the game (your HitPlayer should now look like Figure \ref{fig:LessonThreeScript11}. If you're willing to wait a very long time, you may still be able to die, but a hundred projectiles is a lot of projectiles.
+    }%
+}
+
+You've done it! You've created a lose condition! Feel free to alter the starting value of hitpoints to make it a little bit more challenging, and avoiding ghosts more important. Try values below 10 or so for a pretty challenging experience! While you're in Projectile.cs feel free to change the ``projectileSpeed" or ``maxLifeTime" variables as well, to make the projectiles easier or harder to dodge. Play around with it! 
+
+\subsection{Winning}
+
+Last but not least, we have to create a win condition. For this we'll need to open the last of the scripts we'll be accessing in this lesson Sword.cs. Sword.cs can be found in the ``Codebase" folder and then within the ``Items" folder. 
+
+While Sword mostly looks like the code we've seen before, for the first time we have a class that doesn't ``inherit from MonoBehavior" (: MonoBehavior) instead it inherits from ``Item". This allows the ``Use" function be called when the item is held and used. But what we really care about is the HitEnemy function. Currently all it does (as you can see) is destroy the Enemy on a hit ``Destroy (enemy.gameObject);". 
+
+What sort of win condition should we have? Maybe something like if the player has destroyed a certain number of enemies? There are ten enemies in the game, but to begin with let's say the player need only defeat 1 enemy to win. So let's go ahead and put in a new call to ``GameManager.EndGame" but this time with text related to winning: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+GameManager.EndGame ("You Win!");
+\end{lstlisting}
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+	Insert the EndGame line into HitEnemy and play the game. Destroying just a single enemy seems a bit easy, doesn't it?
+    }%
+}
+
+What if the player instead had to kill many of the ghosts, say all ten to win? That sounds like it's a better win condition, but how could we represent that in code? Well we'll need some way to store the value of how many enemies have been destroyed so far. To do that, we'll need to add a new variable to Sword with global scope. Since we're counting something, we have no need of decimals so we can use an integer value. Let's call it ``enemyCount" and it'll need to have an initial value of 0 so we count up. We don't need to access this variable outside of Sword.cs so feel free to make it private, or simply not specifying an access modifier.
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+int enemyCount = 0;
+\end{lstlisting}
+
+Add that line to above HitEnemy. We'll also need to add one to it every time HitEnemy is called. Within HitEnemy we'll need the line: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+enemyCount = enemyCount +1;
+\end{lstlisting}
+
+Once we've done that, let's figure out what the condition can be before the Win message should be called. It should be something like: enemyCount is greater than nine (since there are ten ghosts we want to be destroyed). To translate into code we'd use something like: 
+
+\lstset{style=sharpc}
+\begin{lstlisting}
+if (enemyCount > 9) {
+	GameManager.EndGame ("You Win!");
+}
+\end{lstlisting}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{LessonThreeScript12}
+  \caption{HitEnemy when it is complete.}
+  \label{fig:LessonThreeScript12}
+\end{figure}
+
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+	Add everything to HitEnemy such that it ends up looking like Figure \ref{fig:LessonThreeScript12}. Play through the game and try to get all the enemies!
+    }%
+}
+
+And that's it! You've created a win condition! There's other things you could add here. For example, you could of course add hitpoints to enemies as well, decrement the enemy hitpoints in HitEnemy until they fall too low then call ``Destroy (enemy.gameObject);". But that's up to you! You have a full, working "beat `em up" game. 
+
+\subsection{End of Lesson Three}
+
+That's all we have for Lesson Three! Feel free to play with your game more, altering the speeds and behaviors of the various pieces till you're happy with them. In this lesson you learned how to:
+
+\begin{enumerate}
+ \item Use access modifiers (private/public) to restrict access
+ \item Make use of functions that ``return" values
+ \item Create complex enemy behavior with if statements
+ \item Call on class variables to run similar behavior on individual objects 
+ \item How to use relational operators to get boolean values from numbers
+\end{enumerate}
+
+In the next lesson we'll focus on the actually building up and creating your own unique world to play a simple version of an adventure game.
+
+\subsection{movementController Functions}
+
+\begin{center}
+\begin{tabular}{ | m{3.3cm} | m{2.2cm} | m{4cm} | m{4cm} | } 
+ \hline
+ Function Name & Arguments & Behavior & Return Type \\ 
+  \hline
+ SetTargetPositionGoal &GameObject value of the target & Sets the enemy's goal to be the target's current position. & [Not Any] \\ 
+ \hline
+  GetDistanceToTarget &GameObject value of the target & Calculates distance between the target and this enemy. & Returns a float value of the distance between the target and this enemy.\\ 
+  \hline
+  CanSeeTarget & GameObject value of the target & Calculates whether or not the enemy can see the target GameObject. & Returns a boolean value, true if can be seen, false otherwise\\
+ \hline
+  SetRandomGoal & [Not Any] & Calculates a random position and sets the enemy's current goal to it. & [Not Any]\\ 
+ \hline
+  ReachedGoal & [Not Any] & Determines whether or not the enemy has reached its current goal. & Returns a boolean value, true if the enemy has reached the goal, false otherwise. \\ 
+ \hline
+ Stop & [Not Any] & Immediately stops the enemy and sets its goal to its current position.  & [Not Any] \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\subsection{attackController Functions}
+
+\begin{center}
+\begin{tabular}{ | m{3.3cm} | m{2.2cm} | m{4cm} | m{4cm} | } 
+ \hline
+ Function Name & Arguments & Behavior & Return Value \\ 
+  \hline
+ GetProjectileRange & [Not Any]  & Calculates the largest possible distance a projectile could travel & Returns a float value of max projectile distance. \\ 
+ \hline
+  Fire & GameObject value for target & Creates and fires a projectile at the target, if it can. & [Not Any] \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\subsection{Lesson Three Glossary}
+\begin{center}
+\begin{tabular}{ | c | m{5cm}  | m{5cm} | } 
+ \hline
+ Vocabulary Word & Definition & Examples \\ 
+  \hline
+ access modifier & A keyword that limits what other code can ``see" a variable, function, or class. & public and private \\ 
+  \hline
+ public & The access modifier that allows access of a class, function, or variable outside of the class where its defined. & public float GetSpeed() \\ 
+ \hline
+ private & The access modifier that doesn't allow access of a class, function, or variable outside of the class where its defined.. & private float speed = 2.0f; \\ 
+ \hline
+ return  & A keyword which ``returns" a value from a function to the line of code which called the function. & return speed; \\ 
+ \hline
+ return type  & A keyword which ``returns" a value from a function to the line of code which called the function. & void \\ 
+ \hline
+  getter  & A slang term for a type of function that is publicly accessible and returns the value of some private variable
+ & GetSpeed \\ 
+ \hline
+  relational operator & A symbol or symbols that represents a boolean relationship between two values. & $>$ and $<$ \\
+ \hline
+\end{tabular}
+\end{center}
+
+\end{document}
